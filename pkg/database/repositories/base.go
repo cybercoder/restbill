@@ -5,31 +5,17 @@ import (
 	"reflect"
 
 	"github.com/cybercoder/restbill/pkg/database"
+	"github.com/cybercoder/restbill/pkg/database/op"
 	"gorm.io/gorm"
 )
 
 // QueryOperator defines supported query operators
-type QueryOperator string
-
-const (
-	Equal          QueryOperator = "="
-	NotEqual       QueryOperator = "!="
-	GreaterThan    QueryOperator = ">"
-	GreaterOrEqual QueryOperator = ">="
-	LessThan       QueryOperator = "<"
-	LessOrEqual    QueryOperator = "<="
-	Like           QueryOperator = "LIKE"
-	In             QueryOperator = "IN"
-	NotIn          QueryOperator = "NOT IN"
-	IsNull         QueryOperator = "IS NULL"
-	IsNotNull      QueryOperator = "IS NOT NULL"
-)
 
 // Condition represents a single query condition
 type Condition struct {
 	Field    string
-	Operator QueryOperator
-	Value    interface{}
+	Operator op.QueryOperator
+	Value    any
 }
 
 // LogicalGroup represents a group of conditions with a logical operator
@@ -178,17 +164,17 @@ func (r *Repository[T]) Exists(conditions []Condition) (bool, error) {
 func (r *Repository[T]) applyConditions(db *gorm.DB, conditions []Condition) *gorm.DB {
 	for _, cond := range conditions {
 		switch cond.Operator {
-		case Equal, NotEqual, GreaterThan, GreaterOrEqual, LessThan, LessOrEqual:
+		case op.Equal, op.NotEqual, op.GreaterThan, op.GreaterOrEqual, op.LessThan, op.LessOrEqual:
 			db = db.Where(fmt.Sprintf("%s %s ?", cond.Field, cond.Operator), cond.Value)
-		case Like:
+		case op.Like:
 			db = db.Where(fmt.Sprintf("%s LIKE ?", cond.Field), cond.Value)
-		case In:
+		case op.In:
 			db = db.Where(fmt.Sprintf("%s IN (?)", cond.Field), cond.Value)
-		case NotIn:
+		case op.NotIn:
 			db = db.Where(fmt.Sprintf("%s NOT IN (?)", cond.Field), cond.Value)
-		case IsNull:
+		case op.IsNull:
 			db = db.Where(fmt.Sprintf("%s IS NULL", cond.Field))
-		case IsNotNull:
+		case op.IsNotNull:
 			db = db.Where(fmt.Sprintf("%s IS NOT NULL", cond.Field))
 		default:
 			db = db.Where(fmt.Sprintf("%s = ?", cond.Field), cond.Value)
