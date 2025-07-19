@@ -1,15 +1,14 @@
 package v1alpha1
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/cybercoder/restbill/pkg/api/middleware"
+	controllers "github.com/cybercoder/restbill/pkg/api/v1alpha1/controllers/user"
+	"github.com/gin-gonic/gin"
+)
 
 func SetupRoutes(r *gin.RouterGroup) {
-	// Resources endpoints
-	// resources := r.Group("/resources")
-	// {
-	// 	resources.GET("", listResources)
-	// 	resources.POST("", createResource)
-	// }
-
-	// // Additional v1alpha1 specific endpoints
-	// r.GET("/experimental", experimentalFeature)
+	cartController := controllers.NewCartController()
+	cart := r.Group("/cart")
+	cart.Use(middleware.GetUser())
+	cart.GET("/", cartController.GetCart)
 }
