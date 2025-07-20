@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cybercoder/restbill/pkg/logger"
+	"github.com/cybercoder/restbill/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,8 +17,13 @@ func GetUser() gin.HandlerFunc {
 		}
 		userHeader = regexp.MustCompile(`.*#`).ReplaceAllString(userHeader, "")
 		parts := strings.Split(userHeader, "/")
-		logger.Infof("sub %s email %s", parts[0], parts[1])
-		c.Set("sub", parts[0])
+		sub, err := utils.StringToUint(parts[0])
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"error": "The user id is not unsigned int."})
+			return
+		}
+
+		c.Set("sub", sub)
 		c.Set("email", parts[1])
 	}
 }
