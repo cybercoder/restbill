@@ -18,8 +18,8 @@ func NewCartController() *CartController {
 }
 
 func (c *CartController) GetCart(ctx *gin.Context) {
-	sub, _ := ctx.Get("sub")
-	cart, err := c.cartService.GetUserCart(sub.(string))
+	sub := ctx.GetUint("sub")
+	cart, err := c.cartService.GetUserCart(sub)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

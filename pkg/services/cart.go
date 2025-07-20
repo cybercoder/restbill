@@ -16,8 +16,8 @@ func NewCartService() *CartService {
 	}
 }
 
-func (s *CartService) GetUserCart(userId string) (*models.Cart, error) {
-	return s.cartRepo.FindFirst([]repositories.Condition{
+func (s *CartService) GetUserCart(userId uint) (*models.Cart, error) {
+	return s.cartRepo.FindOrCreate([]repositories.Condition{
 		{Field: "user_id", Operator: op.Equal, Value: userId},
-	})
+	}, models.Cart{UserId: userId})
 }
