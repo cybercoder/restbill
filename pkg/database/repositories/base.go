@@ -102,6 +102,16 @@ func (r *Repository[T]) Delete(id uint) error {
 
 // ================ Query Operations ================
 
+// FindOrCreate finds an entity by conditions or creates a new one if not found
+func (r *Repository[T]) FindOrCreate(conditions []Condition, defaults T) (*T, error) {
+	db := r.applyConditions(r.db, conditions)
+
+	if err := db.FirstOrCreate(&defaults).Error; err != nil {
+		return nil, err
+	}
+	return &defaults, nil
+}
+
 // FindFirst finds the first record matching conditions
 func (r *Repository[T]) FindFirst(conditions []Condition, opts ...QueryOptions) (*T, error) {
 	var entity T
