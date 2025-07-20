@@ -16,7 +16,7 @@ type Invoice struct {
 	Credit        float64
 	PaymentMethod string
 	Notes         string
-	Items         []InvoiceItem `gorm:"foreignKey:InvoiceID"`
+	Items         []InvoiceItem `gorm:"foreignKey:InvoiceId"`
 	DueDate       time.Time
 	DatePaid      time.Time
 	ExpiresAt     time.Time
@@ -24,9 +24,9 @@ type Invoice struct {
 
 type InvoiceItem struct {
 	gorm.Model
-	InvoiceID   uint          `gorm:"index"`
+	InvoiceId   uint          `gorm:"index"`
 	ParentId    uint          `gorm:"index"`
-	Invoice     Invoice       `gorm:"foreignKey:InvoiceID"`
+	Invoice     Invoice       `gorm:"foreignKey:InvoiceId"`
 	Items       []InvoiceItem `gorm:"foreignKey:ParentId"`
 	Description string
 	Amount      float64
