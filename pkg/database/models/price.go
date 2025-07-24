@@ -6,16 +6,16 @@ import (
 
 type ProductPrice struct {
 	gorm.Model
-	ProductID  uint     `gorm:"index"`
-	CurrencyID uint     `gorm:"index"`
+	ProductId  uint     `gorm:"index"`
+	CurrencyId uint     `gorm:"index"`
 	Amount     float64  `gorm:"not null"`
-	Currency   Currency `gorm:"foreignKey:CurrencyID"`
+	Currency   Currency `gorm:"foreignKey:CurrencyId"`
 }
 
 type AddonPrice struct {
 	gorm.Model
-	AddonID    uint     `gorm:"index"`
-	CurrencyID uint     `gorm:"index"`
+	AddonId    uint     `gorm:"index"`
+	CurrencyId uint     `gorm:"index"`
 	Amount     float64  `gorm:"not null"`
-	Currency   Currency `gorm:"foreignKey:CurrencyID"`
+	Currency   Currency `gorm:"foreignKey:CurrencyId"`
 }
