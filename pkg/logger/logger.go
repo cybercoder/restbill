@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 
@@ -157,4 +158,19 @@ func Panicf(format string, args ...interface{}) {
 		Init()
 	}
 	log.Panicf(format, args...)
+}
+
+// DebugStruct logs any struct as indented JSON
+func DebugStruct(name string, v any) {
+	if GetLogger().Level < logrus.DebugLevel {
+		return
+	}
+
+	j, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		WithFields(Fields{"error": err.Error()}).Error("Failed to marshal struct")
+		return
+	}
+
+	WithFields(Fields{name: string(j)}).Debug("Debug struct")
 }
