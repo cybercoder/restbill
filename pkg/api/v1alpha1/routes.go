@@ -11,4 +11,5 @@ func SetupRoutes(r *gin.RouterGroup) {
 	cart := r.Group("/cart")
 	cart.Use(middleware.GetUser())
 	cart.GET("/", cartController.GetCart)
+	cart.POST("/add/:productId", cartController.AddToCart)
 }
