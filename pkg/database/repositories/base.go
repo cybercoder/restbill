@@ -24,10 +24,15 @@ type LogicalGroup struct {
 	Operator   string // "AND" or "OR"
 }
 
+type Preload struct {
+	Relation string
+	Args     []interface{}
+}
+
 // QueryOptions provides additional query options
 type QueryOptions struct {
 	Select  []string
-	Preload []string
+	Preload []Preload
 	Order   []string
 	Limit   *int
 	Offset  *int
@@ -103,8 +108,9 @@ func (r *Repository[T]) Delete(id uint) error {
 // ================ Query Operations ================
 
 // FindOrCreate finds an entity by conditions or creates a new one if not found
-func (r *Repository[T]) FindOrCreate(conditions []Condition, defaults T) (*T, error) {
+func (r *Repository[T]) FindOrCreate(conditions []Condition, defaults T, opts ...QueryOptions) (*T, error) {
 	db := r.applyConditions(r.db, conditions)
+	db = r.applyOptions(db, opts...)
 
 	if err := db.FirstOrCreate(&defaults).Error; err != nil {
 		return nil, err
@@ -219,7 +225,7 @@ func (r *Repository[T]) applyOptions(db *gorm.DB, opts ...QueryOptions) *gorm.DB
 
 	// Apply preloads
 	for _, preload := range opt.Preload {
-		db = db.Preload(preload)
+		db = db.Preload(preload.Relation, preload.Args...)
 	}
 
 	// Apply ordering
