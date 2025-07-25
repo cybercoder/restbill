@@ -4,6 +4,7 @@ import (
 	"github.com/cybercoder/restbill/pkg/database/models"
 	"github.com/cybercoder/restbill/pkg/database/op"
 	"github.com/cybercoder/restbill/pkg/database/repositories"
+	"github.com/cybercoder/restbill/pkg/logger"
 	"github.com/cybercoder/restbill/pkg/types"
 	"github.com/cybercoder/restbill/pkg/utils"
 	"github.com/samber/lo"
@@ -29,7 +30,7 @@ func (s *CartService) GetUserCart(userId uint) (*models.Cart, error) {
 	}, models.Cart{UserId: userId}, repositories.QueryOptions{
 		Preload: []repositories.Preload{
 			{
-				Relation: "Items",
+				Relation: "Items.Addons",
 			},
 		},
 	})
@@ -78,8 +79,11 @@ func (s *CartService) AddProductToCart(userId uint, productId uint, quantity uin
 	// find product is in cart or not
 
 	_, index, found := lo.FindIndexOf(cart.Items, func(item models.CartItem) bool {
-		return item.ProductId == productId && utils.CompareTwoArraysByIntKey(addons, item.Addons, func(a1 types.Addon) uint { return a1.ID }, func(a2 models.CartItemAddons) uint { return a2.ID })
+		logger.Debugf("cmp rsult : %v", utils.CompareTwoArraysByIntKey(addons, item.Addons, func(a1 types.Addon) uint { return a1.ID }, func(a2 models.CartItemAddons) uint { return a2.AddonId }))
+		return item.ProductId == productId && utils.CompareTwoArraysByIntKey(addons, item.Addons, func(a1 types.Addon) uint { return a1.ID }, func(a2 models.CartItemAddons) uint { return a2.AddonId })
 	})
+
+	logger.Debugf("found: %d", found)
 
 	if !found {
 		cart.Items = append(cart.Items, models.CartItem{
@@ -102,23 +106,15 @@ func (s *CartService) AddProductToCart(userId uint, productId uint, quantity uin
 		cart.Items[index].Quantity += quantity
 
 	}
-
+	logger.Debugf("quantity: %d", cart.Items[index].Quantity)
 	// Create new item addons for comparison
 
-	// Save the cart
-	_, err = s.cartRepo.Update(cart)
+	// Save the cart with associations to ensure cart items are updated
+	_, err = s.cartRepo.Update(cart, repositories.UpdateOptions{WithAssociations: true})
 	if err != nil {
 		return err, nil
 	}
 
 	// Return the response
-	return nil, struct {
-		Cart    *models.Cart    `json:"cart"`
-		Product *models.Product `json:"product"`
-		Addons  []*models.Addon `json:"addons"`
-	}{
-		Cart:    cart,
-		Product: product,
-		Addons:  addonRecords,
-	}
+	return nil, cart
 }

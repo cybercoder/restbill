@@ -43,6 +43,11 @@ type Repository[T any] struct {
 	db *gorm.DB
 }
 
+// UpdateOptions represents options for updating entities
+type UpdateOptions struct {
+	WithAssociations bool // Whether to update associations along with the entity
+}
+
 // NewRepository creates a new Repository instance
 func NewRepository[T any]() *Repository[T] {
 	return &Repository[T]{db: database.GetDB()}
@@ -78,8 +83,12 @@ func (r *Repository[T]) GetByID(id uint, opts ...QueryOptions) (*T, error) {
 }
 
 // Update updates an existing entity
-func (r *Repository[T]) Update(entity *T) (*T, error) {
-	if err := r.db.Save(entity).Error; err != nil {
+func (r *Repository[T]) Update(entity *T, opts ...UpdateOptions) (*T, error) {
+	db := r.db
+	if len(opts) > 0 && opts[0].WithAssociations {
+		db = db.Session(&gorm.Session{FullSaveAssociations: true})
+	}
+	if err := db.Save(entity).Error; err != nil {
 		return nil, err
 	}
 	return entity, nil

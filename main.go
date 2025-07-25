@@ -27,6 +27,7 @@ func main() {
 		&models.InvoiceItem{},
 		&models.Cart{},
 		&models.CartItem{},
+		&models.CartItemAddons{},
 	)
 	router := gin.Default()
 	api.SetupRoutes(router)
